@@ -1485,7 +1485,7 @@ function downloadPDF(){
 
 /* ── EVENT WIRING ── */
 const CURRENCY_INPUT_IDS=['monthlyIncome','monthlyExpense','cashAvailable','currentInvestment','familyHomeValue','otherRealEstate','liabilities','specialAllotment'];
-const OTHER_INPUT_IDS=['age','gender','returnPA','retirementPeriod','netReturnPA','inflation','legitChildren','illegitChildren','survivingSpouse','legitParents','illegitParents'];
+const OTHER_INPUT_IDS=['age','gender','legallyMarried','returnPA','retirementPeriod','netReturnPA','inflation','legitChildren','illegitChildren','survivingSpouse','legitParents','illegitParents'];
 
 CURRENCY_INPUT_IDS.forEach(id=>{
   const el=document.getElementById(id);if(!el)return;
@@ -1498,6 +1498,23 @@ OTHER_INPUT_IDS.forEach(id=>{
   const el=document.getElementById(id);
   if(el){el.addEventListener('input',render);el.addEventListener('change',render);}
 });
+
+// Keep "Legally Married" and "Surviving Spouse" locked together in both directions.
+// Changing either to Yes/No sets the other to match. They always mirror.
+const _lm=document.getElementById('legallyMarried');
+const _ss=document.getElementById('survivingSpouse');
+if(_lm&&_ss){
+  _lm.addEventListener('change',()=>{
+    if(_lm.value==='Yes') _ss.value='Yes';
+    else if(_lm.value==='No') _ss.value='No';
+    render();
+  });
+  _ss.addEventListener('change',()=>{
+    if(_ss.value==='Yes') _lm.value='Yes';
+    else if(_ss.value==='No') _lm.value='No';
+    render();
+  });
+}
 
 window.addEventListener('resize',()=>{if(lastR&&lastE)renderCharts(lastR,lastE);});
 render();
