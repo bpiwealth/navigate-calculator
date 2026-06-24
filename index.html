@@ -199,6 +199,13 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .adjuster{background:var(--white);border:1.5px solid var(--gold-bdr);border-radius:var(--r-sm);padding:14px 17px;margin-top:12px}
 .adjuster-label{font-size:.71rem;font-weight:700;color:var(--g600);margin-bottom:5px;display:block}
 .slider-wrap{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.ret-slider{background:var(--g50);border:1px solid #eeecea;border-radius:var(--r-sm);padding:13px 16px;margin-top:14px}
+.ret-slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+.ret-slider-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--g600)}
+.ret-slider-val{font-size:1.15rem;font-weight:800;color:var(--ruby);font-variant-numeric:tabular-nums}
+.ret-slider input[type=range]{width:100%;height:5px;border-radius:3px;accent-color:var(--ruby);background:transparent;cursor:pointer}
+.ret-slider-note{font-size:.72rem;color:var(--g600);margin-top:8px;line-height:1.5}
+.ret-slider-note b{color:var(--g800)}
 .slider-wrap input[type=range]{flex:1;height:4px;border-radius:2px;accent-color:var(--gold);border:none;background:transparent}
 .slider-val{font-size:1rem;font-weight:800;color:var(--gold-dk);white-space:nowrap;min-width:88px;text-align:right}
 .adjuster-result{font-size:.76rem;color:var(--g600);margin-top:5px}
@@ -215,6 +222,9 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 table{width:100%;border-collapse:collapse;font-size:.76rem}
 thead th{background:var(--g50);padding:7px 9px;text-align:right;font-weight:700;font-size:.63rem;text-transform:uppercase;letter-spacing:.05em;color:var(--g400);border-bottom:1px solid var(--g200);white-space:nowrap}
 thead th:first-child{text-align:center;width:40px}
+.sink-table .grp-hd{text-align:center;border-bottom:1px solid var(--g200);border-left:1px solid var(--g200);border-right:1px solid var(--g200);color:var(--ruby);background:#faf6f6}
+.sink-table .sub-hd{text-align:right;font-size:.58rem;color:var(--g600);border-left:1px solid var(--g200)}
+.sink-table .sub-hd:last-of-type{border-right:1px solid var(--g200)}
 tbody tr{border-bottom:1px solid #f3f2f0}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--g50)}
@@ -494,7 +504,7 @@ footer{text-align:center;padding:18px;color:var(--g400);font-size:.69rem;border-
       </div>
       <div class="field">
         <label class="lbl">Annual Inflation</label>
-        <div class="fi"><input type="number" id="inflation" class="pr" value="3" min="0" max="20" step="0.1"><span class="suf">%</span></div>
+        <div class="fi"><input type="number" id="inflation" class="pr" value="3.75" min="0" max="20" step="0.05"><span class="suf">%</span></div>
       </div>
     </div>
   </div>
@@ -640,7 +650,7 @@ footer{text-align:center;padding:18px;color:var(--g400);font-size:.69rem;border-
 
       <!-- Visual Overview -->
       <div class="sc">
-        <div class="sc-hd"><h2>Visual Overview</h2><p>Based on current inputs</p></div>
+        <div class="sc-hd"><h2>Visual Overview</h2><p>Drag the slider to see how your retirement-fund return changes each option</p></div>
         <div class="chart-grid">
           <div class="chart-box">
             <div class="chart-title">Fund Balance by Age</div>
@@ -656,6 +666,14 @@ footer{text-align:center;padding:18px;color:var(--g400);font-size:.69rem;border-
             <canvas id="chartYears" height="170"></canvas>
             <div class="chart-legend" id="yearsLegend"></div>
           </div>
+        </div>
+        <div class="ret-slider">
+          <div class="ret-slider-top">
+            <span class="ret-slider-label">Estimated net return p.a. of retirement fund</span>
+            <span class="ret-slider-val" id="retSliderVal">4.0%</span>
+          </div>
+          <input type="range" id="retSlider" min="0" max="12" step="0.25" value="4">
+          <div class="ret-slider-note" id="retSliderNote"></div>
         </div>
       </div>
 
@@ -674,19 +692,19 @@ footer{text-align:center;padding:18px;color:var(--g400);font-size:.69rem;border-
           </div>
           <div class="sink-panel active" id="sink0">
             <div class="proj-body open">
-              <table><thead><tr><th>Yr</th><th>Annual Expense</th><th>Retirement Fund</th><th>Retirement fund less expense</th></tr></thead>
+              <table class="sink-table"><thead><tr><th rowspan="2">Yr</th><th rowspan="2">Annual Expense</th><th colspan="2" class="grp-hd">Retirement Fund</th><th rowspan="2">Retirement fund<br>less expense</th></tr><tr><th class="sub-hd">Retirement Income Sources</th><th class="sub-hd">Retirement Capital</th></tr></thead>
               <tbody id="tb3"></tbody><tfoot id="tf3"></tfoot></table>
             </div>
           </div>
           <div class="sink-panel" id="sink1">
             <div class="proj-body open">
-              <table><thead><tr><th>Yr</th><th>Annual Expense</th><th>Retirement Fund</th><th>Retirement fund less expense</th></tr></thead>
+              <table class="sink-table"><thead><tr><th rowspan="2">Yr</th><th rowspan="2">Annual Expense</th><th colspan="2" class="grp-hd">Retirement Fund</th><th rowspan="2">Retirement fund<br>less expense</th></tr><tr><th class="sub-hd">Retirement Income Sources</th><th class="sub-hd">Retirement Capital</th></tr></thead>
               <tbody id="tb2"></tbody><tfoot id="tf2"></tfoot></table>
             </div>
           </div>
           <div class="sink-panel" id="sink2">
             <div class="proj-body open">
-              <table><thead><tr><th>Yr</th><th>Annual Expense</th><th>Retirement Fund</th><th>Retirement fund less expense</th></tr></thead>
+              <table class="sink-table"><thead><tr><th rowspan="2">Yr</th><th rowspan="2">Annual Expense</th><th colspan="2" class="grp-hd">Retirement Fund</th><th rowspan="2">Retirement fund<br>less expense</th></tr><tr><th class="sub-hd">Retirement Income Sources</th><th class="sub-hd">Retirement Capital</th></tr></thead>
               <tbody id="tb1"></tbody><tfoot id="tf1"></tfoot></table>
             </div>
           </div>
@@ -885,7 +903,7 @@ function pvGA(pmt,g,r,n){
 }
 
 /* ── RETIREMENT COMPUTE ── */
-function computeRetirement(){
+function computeRetirement(rOverride){
   const monthlyIncome  = gv('monthlyIncome');
   const monthlyExpense = gv('monthlyExpense');
   const cashAvail      = gv('cashAvailable');
@@ -895,7 +913,7 @@ function computeRetirement(){
   const specialAllot   = gv('specialAllotment');
   const period         = Math.max(1,Math.round(gv('retirementPeriod')||20));
   const startAge       = Math.max(0,Math.round(gv('age')||0));
-  const r              = gv('netReturnPA')/100;
+  const r              = (rOverride!=null?rOverride:gv('netReturnPA'))/100;
   const inf            = gv('inflation')/100;
 
   const annualIncome     = monthlyIncome*12;
@@ -922,40 +940,50 @@ function computeRetirement(){
     for(let y=1;y<=100;y++){const w=annualGap*Math.pow(1+inf,y-1);f=f*(1+r)-w;if(f<=0){yearsFundLasts=y-1;break;}yearsFundLasts=y;}
   } else { yearsFundLasts=period; }
 
-  // Projection builders
+  // Projection builders — uniform columns across all tabs:
+  //   annExp   = desired annual expense (monthly×12) inflated each year
+  //   incomeSrc= retirement income sources (annual income + investment income), flat
+  //   cap      = running beginning-of-year capital balance
+  //   endFund  = retirement fund less expense (end-of-year balance)
+  const incSrcFlat = annualIncome + incomeFromInvest;
   function buildT1(){
+    // Maintain: fund the full desired expense for the whole period
     const rows=[];let fl=totalFundRequired,tc=0,tg=0,tp=0;
     for(let y=1;y<=period;y++){
       const cost=annualGap*Math.pow(1+inf,y-1);
+      const annExp=annualExpense*Math.pow(1+inf,y-1);
       let begFund,gains,principalUsed,endFund;
       if(y===1){begFund=fl;gains=0;principalUsed=cost;endFund=fl-cost;}
       else{begFund=fl*(1+r);gains=fl*r;endFund=begFund-cost;principalUsed=Math.max(0,cost-gains);}
-      rows.push({y,cost,begFund,gains,principalUsed,endFund});fl=endFund;
+      rows.push({y,cost,annExp,incomeSrc:incSrcFlat,cap:begFund,begFund,gains,principalUsed,endFund});fl=endFund;
       tc+=cost;tg+=gains;tp+=principalUsed;
     }
     return{rows,tc,tg,tp};
   }
   function buildT2(spendOverride){
+    // Adjust: reduced sustainable spending drives the gap, but the Annual Expense
+    // column shows the FULL desired expense (uniform across tabs).
     const chosenExp=spendOverride??sustainableExpense;
     const chosenGap=Math.max(0,chosenExp-estAnnualInflow);
     const rows=[];let f=netCash,tc=0,tg=0,tp=0;
     for(let y=1;y<=period;y++){
       const w=chosenGap*Math.pow(1+inf,y-1);
-      const rc=chosenExp*Math.pow(1+inf,y-1);
+      const annExp=annualExpense*Math.pow(1+inf,y-1);
       const beg=f,gains=beg*r,end=beg+gains-w,pu=Math.max(0,w-gains);
-      rows.push({y,cost:rc,begFund:beg,gains,principalUsed:pu,endFund:Math.max(0,end)});
+      rows.push({y,cost:annExp,annExp,incomeSrc:incSrcFlat,cap:beg,begFund:beg,gains,principalUsed:pu,endFund:Math.max(0,end)});
       f=Math.max(0,end);tc+=w;tg+=gains;tp+=pu;
     }
     return{rows,tc,tg,tp,chosenExp};
   }
   function buildT3(){
+    // Default (Do Nothing): keep full desired spending; show how the fund depletes
     const rows=[];let f=netCash,tc=0,tg=0,tp=0;
     const maxY=Math.min(Math.max(yearsFundLasts+3,period),50);
     for(let y=1;y<=maxY;y++){
       const w=annualGap>0?annualGap*Math.pow(1+inf,y-1):0;
-      const rc=annualExpense*Math.pow(1+inf,y-1);
+      const annExp=annualExpense*Math.pow(1+inf,y-1);
       const beg=f,gains=beg>0?beg*r:0,end=beg+gains-w,pu=Math.max(0,w-gains);
-      rows.push({y,cost:rc,begFund:beg,gains,principalUsed:pu,endFund:end,depleted:end<=0});
+      rows.push({y,cost:annExp,annExp,incomeSrc:incSrcFlat,cap:beg,begFund:beg,gains,principalUsed:pu,endFund:end,depleted:end<=0});
       f=end;tc+=w;tg+=gains;tp+=pu;
     }
     return{rows,tc,tg,tp};
@@ -1134,6 +1162,16 @@ function render(){
   renderEstate(e);
   renderCharts(c,e);
   initSlider(c);
+  syncRetSlider();
+}
+
+// Sync the Visual Overview returns slider to the current net-return field value
+function syncRetSlider(){
+  const s=document.getElementById('retSlider');if(!s)return;
+  const v=gv('netReturnPA');
+  s.value=v;
+  document.getElementById('retSliderVal').textContent=v.toFixed(2).replace(/\.?0+$/,'')+'%';
+  document.getElementById('retSliderNote').innerHTML='';
 }
 
 /* ── RETIREMENT RENDERS ── */
@@ -1155,8 +1193,8 @@ function renderVerdict(c){
   } else if(c.cashShortfall>0){
     box.className='verdict gap';
     lbl.textContent='⚠️ There is a retirement gap';
-    hdg.textContent=`To live comfortably for ${c.period} years, a total fund of ${fP(c.totalFundRequired)} is needed today.`;
-    sub.textContent=`Your current plan leaves a ${fP(c.cashShortfall)} gap vs. your available net cash. You can increase your investment, reduce monthly spending, or plan for a shorter fund duration. Explore the options below.`;
+    hdg.textContent=`To live comfortably for ${c.period} years, an additional investment of ${fP(c.cashShortfall)} is needed today.`;
+    sub.textContent='';
   } else {
     box.className='verdict ok';
     lbl.textContent='✅ You are on track';
@@ -1236,11 +1274,12 @@ function renderScenarios(c){
 }
 
 function renderTable(tbId,tfId,rows,totals,isDepleted){
+  const neg=v=>v>=0?fP(v):'<span style="color:var(--ruby)">('+fP(Math.abs(v))+')</span>';
   document.getElementById(tbId).innerHTML=rows.map(r=>{
     const dep=isDepleted&&r.depleted?' class="depleted"':'';
-    return`<tr${dep}><td>${r.y}</td><td>${fP(r.cost)}</td><td>${r.begFund>=0?fP(r.begFund):'<span style="color:var(--ruby)">('+fP(Math.abs(r.begFund))+')</span>'}</td><td>${r.endFund>=0?fP(r.endFund):'<span style="color:var(--ruby)">('+fP(Math.abs(r.endFund))+')</span>'}</td></tr>`;
+    return`<tr${dep}><td>${r.y}</td><td>${fP(r.annExp)}</td><td>${fP(r.incomeSrc)}</td><td>${neg(r.cap)}</td><td>${neg(r.endFund)}</td></tr>`;
   }).join('');
-  document.getElementById(tfId).innerHTML=`<tr><td>—</td><td>${fP(totals.tc)}</td><td>—</td><td>—</td></tr>`;
+  const tf=document.getElementById(tfId);if(tf)tf.innerHTML='';
 }
 
 /* ── ESTATE RENDERS ── */
@@ -1476,7 +1515,7 @@ function resetForm(){
   const lm=document.getElementById('legallyMarried');if(lm)lm.value='';
   document.getElementById('retirementPeriod').value='20';
   document.getElementById('netReturnPA').value='4';
-  document.getElementById('inflation').value='3';
+  document.getElementById('inflation').value='3.75';
   document.getElementById('legitChildren').value='0';
   document.getElementById('illegitChildren').value='0';
   document.getElementById('survivingSpouse').value='Yes';
@@ -1684,6 +1723,33 @@ function acceptConsent(){
 }
 
 window.addEventListener('resize',()=>{if(lastR&&lastE)renderCharts(lastR,lastE);});
+
+// ── VISUAL OVERVIEW RETURNS SLIDER ──
+// Live "what-if": override the retirement-fund return and re-render the option
+// wordings, charts, and sinking-fund tables — without changing the input field.
+const _retSlider=document.getElementById('retSlider');
+if(_retSlider){
+  _retSlider.addEventListener('input',()=>{
+    if(!lastE)return; // results not yet shown
+    const rv=parseFloat(_retSlider.value);
+    const fmt=x=>x.toFixed(2).replace(/\.?0+$/,'');
+    // Mirror the slider value into the actual input field, then full re-render so
+    // the field, wordings, charts and sinking-fund tables all stay in sync.
+    document.getElementById('netReturnPA').value=fmt(rv);
+    render();
+    const c=lastR,fd=c.yearsFundLasts,per=c.period;
+    let note;
+    if(c.gapFundedByCapital<=0){
+      note=`At a <b>${fmt(rv)}%</b> return, your nest egg already covers your desired spending for the full <b>${per}-year</b> period.`;
+    } else if(fd>=per){
+      note=`At a <b>${fmt(rv)}%</b> return, doing nothing sustains your desired spending for the full <b>${per} years</b>.`;
+    } else {
+      note=`At a <b>${fmt(rv)}%</b> return, doing nothing sustains your desired spending for about <b>${fd} ${fd===1?'year':'years'}</b> — ${per-fd} short of your ${per}-year period.`;
+    }
+    document.getElementById('retSliderNote').innerHTML=note;
+  });
+}
+
 render();
 </script>
 </body>
