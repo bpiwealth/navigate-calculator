@@ -753,7 +753,7 @@ footer{text-align:center;padding:18px;color:var(--g400);font-size:.69rem;border-
 
       <!-- Gross Estate -->
       <div class="sc">
-        <div class="sc-hd"><h2>Gross Estate &amp; Net Taxable Estate</h2><p>Per TRAIN Law (RA 10963)</p></div>
+        <div class="sc-hd"><h2>Gross Estate (for Estate Tax Purposes) &amp; Net Taxable Estate</h2><p>Per TRAIN Law (RA 10963)</p></div>
         <div class="estate-grid">
           <div class="estate-card navy">
             <div class="ec-label">Total Financial Assets</div>
@@ -766,7 +766,7 @@ footer{text-align:center;padding:18px;color:var(--g400);font-size:.69rem;border-
             <div class="ec-sub">Real property, vehicles, business, personal property</div>
           </div>
           <div class="estate-card navy estate-card-full">
-            <div class="ec-label">Gross Estate</div>
+            <div class="ec-label">Gross Estate (for Estate Tax Purposes)</div>
             <div class="ec-val" id="eGrossEstate"></div>
             <div class="ec-sub">Total financial + non-financial assets</div>
           </div>
@@ -790,9 +790,9 @@ footer{text-align:center;padding:18px;color:var(--g400);font-size:.69rem;border-
             <div class="ec-sub">Flat 6% of net taxable estate per TRAIN Law</div>
           </div>
           <div class="estate-card green estate-card-full">
-            <div class="ec-label">Net Estate After Tax</div>
+            <div class="ec-label">Net Distributable Estate</div>
             <div class="ec-val" id="eNetAfterTax"></div>
-            <div class="ec-sub">Available for distribution to heirs</div>
+            <div class="ec-sub">Gross Estate (for estate tax purposes) less Share of Surviving Spouse (if any) less 6% estate tax. This will then be the basis for the legitime computation.</div>
           </div>
         </div>
       </div>
@@ -1083,7 +1083,7 @@ function computeEstate(){
    *
    * Net Taxable Estate (C38) = Gross − Total Deductions − (½ Gross if spouse)
    * Estate Tax (C39) = Net Taxable Estate × 6%
-   * Net Estate After Tax (C40) = Net Taxable Estate − Estate Tax
+   * Net Distributable Estate = Gross Estate − Share of Surviving Spouse − Estate Tax
    */
   const familyHomeShare  = familyHomeOtherOwners>0 ? familyHomeValue/(1+familyHomeOtherOwners) : familyHomeValue;
   const familyHomeOwners = 1 + familyHomeOtherOwners; // co-owners excl. you & spouse
@@ -1098,9 +1098,13 @@ function computeEstate(){
   const spouseConjugalShare = hasSpouse ? grossEstate*0.5 : 0;        // C37 (½ of gross)
   const netTaxableEstate = Math.max(0, netEstateAfterDed - spouseConjugalShare); // C38
 
-  /* Estate Tax: flat 6% per TRAIN Law */
+  /* Estate Tax: flat 6% per TRAIN Law (tax base = Net Taxable Estate) */
   const estateTax  = netTaxableEstate * 0.06;
-  const netAfterTax= netTaxableEstate - estateTax;   // distributed to heirs
+  /* Net Distributable Estate (basis of legitime) — per V2 Excel:
+   * = Gross Estate − Share of Surviving Spouse (if any) − 6% Estate Tax.
+   * Allowable deductions (std + family home) are tax-only reductions and do
+   * NOT reduce what the decedent can actually distribute to the heirs. */
+  const netAfterTax= Math.max(0, grossEstate - spouseConjugalShare - estateTax);   // Net Distributable Estate
 
   /* ── LEGITIME (Civil Code, mirrored from Excel formulas) ──
    * B3 = netAfterTax, B6 = legitChildrenN, B7 = survivingSpouse,
@@ -1371,9 +1375,9 @@ function renderEstate(e){
 
   // Legitime summary
   document.getElementById('eTotalLegit').textContent=fP(e.totalLegitme);
-  document.getElementById('eLegitPct').textContent=e.netAfterTax>0?`${fPct(e.totalLegitme/e.netAfterTax)} of net estate after tax`:'—';
+  document.getElementById('eLegitPct').textContent=e.netAfterTax>0?`${fPct(e.totalLegitme/e.netAfterTax)} of net distributable estate`:'—';
   document.getElementById('eFreePortion').textContent=fP(e.freePortion);
-  document.getElementById('eFreePct').textContent=e.netAfterTax>0?`${fPct(e.freePortion/e.netAfterTax)} of net estate after tax`:'—';
+  document.getElementById('eFreePct').textContent=e.netAfterTax>0?`${fPct(e.freePortion/e.netAfterTax)} of net distributable estate`:'—';
 
   // Heirs table
   const rows=[];
@@ -1699,7 +1703,7 @@ function downloadPDF(){
         </div>
         <div>
           <div class="pdf-stat"><div class="pdf-stat-label">Estate Tax (6%)</div><div class="pdf-stat-val ruby">${fP(e.estateTax)}</div></div>
-          <div class="pdf-stat"><div class="pdf-stat-label">Net Estate After Tax</div><div class="pdf-stat-val green">${fP(e.netAfterTax)}</div></div>
+          <div class="pdf-stat"><div class="pdf-stat-label">Net Distributable Estate</div><div class="pdf-stat-val green">${fP(e.netAfterTax)}</div></div>
         </div>
       </div>
       <div class="pdf-2col" style="margin-bottom:8pt">
@@ -1723,7 +1727,11 @@ function downloadPDF(){
     </div>
 
     <div class="pdf-footer">
-      <strong>Disclaimer:</strong> This report is for general informational and educational purposes only and does not constitute legal, tax, financial, or investment advice. Estate computations are based on TRAIN Law (RA 10963) and the Civil Code of the Philippines, using simplified assumptions — for married individuals, all assets are assumed conjugal or community property with one-half (½) attributed to the decedent, and only the standard and family home deductions are applied. All results are estimates only. Consult a qualified Philippine lawyer, CPA, or financial advisor for advice tailored to your circumstances.<br>
+      <strong>Disclaimer:</strong> The Wealth Planning Calculator is provided solely for general informational and educational purposes. It does not constitute legal, tax, financial, or investment advice. You should consult a qualified Philippine lawyer, CPA, or financial advisor for advice tailored to your specific circumstances.<br><br>
+      Use of the Wealth Planning Calculator does not create any attorney-client, accountant-client, fiduciary, or other professional relationship between you and BPI Wealth, or any of its affiliates.<br><br>
+      The Wealth Planning Calculator is based on general provisions of Philippine law, including the National Internal Revenue Code and Civil Code rules on succession. However, laws, regulations, BIR issuances, and jurisprudence may change at any time, and the Wealth Planning Calculator may not reflect the most current developments.<br><br>
+      The estate tax computations generated by the Wealth Planning Calculator are based on simplified assumptions. For married individuals, all assets are assumed to be conjugal or community property, with one-half (½) attributed to the decedent. The computation includes only the standard deduction and family home deduction, and does not take into account other allowable deductions or specific circumstances that may affect the actual estate tax due.<br><br>
+      Accordingly, all results are estimates only and are indicative in nature. They do not substitute for the advice, review, or certification of a licensed CPA, tax practitioner, or legal professional, and should not be relied upon for tax filing, estate planning, or compliance purposes.<br><br>
       Generated by Navigate Wealth Planning Calculator · BPI Wealth Management
     </div>`;
 
