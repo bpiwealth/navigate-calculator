@@ -654,7 +654,7 @@ footer{text-align:center;padding:18px;color:var(--g400);font-size:.69rem;border-
         <div class="tab-panel" id="tab1">
           <div class="sc-intro gold">
             <div class="sc-tag">Option 2 · Desired Lifestyle (With Additional investment)</div>
-            <div class="sc-title">Invest more so you can keep your desired lifestyle for the full retirement period.</div>
+            <div class="sc-title" id="scMaintainTitle">Invest more so you can keep your desired lifestyle for the full retirement period.</div>
             <div class="sc-desc" id="scMaintainDesc"></div>
             <div class="sc-stats" id="scMaintainStats"></div>
           </div>
@@ -664,7 +664,7 @@ footer{text-align:center;padding:18px;color:var(--g400);font-size:.69rem;border-
         <div class="tab-panel" id="tab2">
           <div class="sc-intro gold">
             <div class="sc-tag">Option 3 · Adjust your Lifestyle</div>
-            <div class="sc-title">Adjust your monthly budget so your nest egg lasts the full retirement period.</div>
+            <div class="sc-title" id="scAdjustTitle">Adjust your monthly budget so your nest egg lasts the full retirement period.</div>
             <div class="sc-desc" id="scAdjustDesc"></div>
             <div class="sc-stats" id="scAdjustStats"></div>
           </div>
@@ -1314,6 +1314,9 @@ function renderScenarios(c){
   // Reduce monthly expense so the nest egg lasts the full retirement period.
   const adjMonthly=c.sustainableExpense/12;
   const adjDesc=document.getElementById('scAdjustDesc');
+  document.getElementById('scAdjustTitle').textContent = (gap<=0)
+    ? 'No adjustment needed — what you have is sufficient for your retirement years.'
+    : 'Adjust your monthly budget so your nest egg lasts the full retirement period.';
   if(c.insufficientCapital&&c.netCash<=0){
     adjDesc.innerHTML=`Your retirement capital is <span class="hl hl-ruby">${c.netCash<0?'−'+fP(Math.abs(c.netCash)):fP(0)}</span>, so there is no capital to draw down. Even reducing your spending, your nest egg cannot sustain any drawdown until your capital is positive — you would first need to cover your liabilities and planned big purchase / one-time gift. The most you could spend is your recurring income of <span class="hl hl-gold">${fP(c.incomeSources/12)}/month</span>.`;
   } else if(gap<=0){
@@ -1331,6 +1334,9 @@ function renderScenarios(c){
   // Invest an additional amount (shortfall vs net capital) to fully fund desired spending.
   const shortfall=c.cashShortfall;
   const maintainDesc=document.getElementById('scMaintainDesc');
+  document.getElementById('scMaintainTitle').textContent = (gap<=0||shortfall<=0)
+    ? 'Your nest egg already covers your desired lifestyle — no additional investment required.'
+    : 'Invest more so you can keep your desired lifestyle for the full retirement period.';
   if(gap<=0||shortfall<=0){
     maintainDesc.innerHTML=`Your retirement nest egg already fully funds your desired spending of ${fP(c.monthlyExpense)}/month for the full ${yrs}-year retirement period. You have a surplus of <span class="hl hl-green">${fP(Math.abs(shortfall))}</span> — no additional investment is required.`;
   } else if(c.insufficientCapital&&c.netCash<0){
@@ -1417,13 +1423,22 @@ function drawBalanceChart(c){
   const hasAge=c.startAge>0;
   const N=c.period+1; // points from year 0 (start) through end of period
 
-  // Live Comfortably: full desired lifestyle, fund glides to ~0 at the end of the retirement period
-  const d1=c.t1.rows.map(r=>Math.max(0,r.endFund));
-  d1.unshift(c.totalFundRequired);                 // year 0 starting balance
-  // Live Safe: adjusted budget so the fund also lasts the full period (lower glide path)
+  // Desired Lifestyle: with additional investment, fund glides to ~0 at the end of the period.
+  // In a SURPLUS (no additional investment needed), there is nothing extra to invest, so the
+  // Desired scenario is identical to Default — start from the same actual capital (netCash)
+  // and grow/deplete with the surplus, rather than starting from totalFundRequired (= 0).
+  let d1;
+  if(c.annualGap>0){
+    d1=c.t1.rows.map(r=>Math.max(0,r.endFund));
+    d1.unshift(c.totalFundRequired);               // year 0 starting balance (additional fund)
+  }else{
+    d1=[c.netCash];
+    {let f=c.netCash;for(let y=1;y<=c.period;y++){const w=c.annualGap>0?c.annualGap*Math.pow(1+c.inf,y-1):0;f=f*(1+c.r)-w;if(f<=0){d1.push(0);break;}d1.push(f);}}
+  }
+  // Adjust: adjusted budget so the fund also lasts the full period (lower glide path)
   const d2=c.t2.rows.map(r=>Math.max(0,r.endFund));
   d2.unshift(c.netCash);
-  // Live Within Means: current resources at desired spend — depletes early at yearsFundLasts.
+  // Default: current resources at desired spend — depletes early at yearsFundLasts.
   // Stop the line at the run-out point (do not draw a flat tail along zero).
   const d3=[c.netCash];
   {let f=c.netCash;for(let y=1;y<=c.period;y++){const w=c.annualGap>0?c.annualGap*Math.pow(1+c.inf,y-1):0;f=f*(1+c.r)-w;if(f<=0){d3.push(0);break;}d3.push(f);}}
@@ -1820,9 +1835,9 @@ if(_retSlider){
     if(c.gapFundedByCapital<=0){
       note=`At a <b>${fmt(rv)}%</b> return, your nest egg already covers your desired spending for the full <b>${per}-year</b> period.`;
     } else if(fd>=per){
-      note=`At a <b>${fmt(rv)}%</b> return, doing nothing sustains your desired spending for the full <b>${per} years</b>.`;
+      note=`At a <b>${fmt(rv)}%</b> return, having no additional investment sustains your desired spending for the full <b>${per} years</b>.`;
     } else {
-      note=`At a <b>${fmt(rv)}%</b> return, doing nothing sustains your desired spending for about <b>${fd} ${fd===1?'year':'years'}</b> — ${per-fd} short of your ${per}-year period.`;
+      note=`At a <b>${fmt(rv)}%</b> return, having no additional investment sustains your desired spending for about <b>${fd} ${fd===1?'year':'years'}</b> — ${per-fd} short of your ${per}-year period.`;
     }
     document.getElementById('retSliderNote').innerHTML=note;
   });
