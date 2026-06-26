@@ -1287,7 +1287,7 @@ function renderScenarios(c){
   const gap=c.gapFundedByCapital;            // >0 means expenses exceed income (net expense)
   const net=c.incomeSources-c.targetAnnualExpense; // >0 net income, <0 net expense
   document.getElementById('gapBox').innerHTML=`
-    <div class="gap-row"><span class="gr-lbl">Target annual expense<span class="gr-sub">monthly expense × 12</span></span><span class="gr-val">(${fP(c.targetAnnualExpense)})</span></div>
+    <div class="gap-row"><span class="gr-lbl">Estimated annual expense<span class="gr-sub">monthly expense × 12</span></span><span class="gr-val">(${fP(c.targetAnnualExpense)})</span></div>
     <div class="gap-row"><span class="gr-lbl">Add: Income sources during retirement</span><span class="gr-val">${fP(c.incomeSources)}</span></div>
     <div class="gap-row indent sub-detail"><span class="gr-lbl">Other Sources of Income During Retirement (annual)</span><span class="gr-val">${fP(c.annualIncome)}</span></div>
     <div class="gap-row indent sub-detail"><span class="gr-lbl">Estimated return from existing investments (annual)</span><span class="gr-val">${fP(c.incomeFromInvest)}</span></div>
