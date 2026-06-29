@@ -1124,15 +1124,21 @@ function computeEstate(){
   // Per Legitimate Child = if B6>0: legitChildTotal/B6 else 0
   const perLegitChild   = B6>0 ? legitChildTotal/B6 : 0;
 
-  // Surviving Spouse (Excel formula replicated exactly):
-  // =IF(B7="No",0,IF(B6>0,MIN(perLegitChild,(B3-legitChildTotal)/1),
-  //   IF(B9="Yes",IF(B8>0,B3*1/8,B3*0.25),
-  //     IF(AND(B8=0,B10="Yes"),B3*0.25,
-  //       IF(B8>0,B3*1/3,B3*0.5)))))
+  // Surviving Spouse (Excel V4 C54, intended logic):
+  // =IF(B7="No",0,
+  //   IF(B6>1, MIN(perLegitChild, B3-legitChildTotal),     // 2+ legit children
+  //   IF(B6==1, B3*0.25,                                    // exactly 1 legit child → spouse ¼ (Art. 892)
+  //   IF(B9="Yes", IF(B8>0,B3*1/8,B3*0.25),
+  //     IF(AND(B8=0,B10="Yes"), B3*0.25,
+  //       IF(B8>0, B3*1/3, B3*0.5))))))
+  // Note: with exactly one legitimate child the surviving spouse's legitime is ¼ of the
+  // net distributable estate (not equal to the child's ½), leaving a ¼ free portion.
   let spouseShare=0;
   if(B7==='Yes'){
-    if(B6>0){
-      spouseShare=Math.min(perLegitChild,(B3-legitChildTotal)/1);
+    if(B6>1){
+      spouseShare=Math.min(perLegitChild,(B3-legitChildTotal));
+    } else if(B6===1){
+      spouseShare=B3*0.25;
     } else if(B9==='Yes'){
       spouseShare=B8>0?B3*(1/8):B3*0.25;
     } else if(B8===0&&B10==='Yes'){
